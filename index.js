@@ -7,6 +7,11 @@ async function getStartingPitchers() {
     // KBO 경기 정보 페이지로 이동
     await page.goto('https://www.koreabaseball.com/Schedule/GameCenter/Main.aspx');
 
+    const Date = await page.evaluate(() => {
+      const data = [];
+      document.querySelector('today')
+    })
+
     // 페이지에서 선발 투수 정보 가져오기
     const pitchers = await page.evaluate(() => {
       const data = [];
@@ -29,6 +34,7 @@ async function getStartingPitchers() {
       return data;
   });
   
+  console.log(Date)
   console.log(pitchers); // 팀과 선발 투수 정보 출력
 
   await browser.close();
