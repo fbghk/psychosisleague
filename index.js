@@ -16,9 +16,12 @@ async function getStartingPitchers() {
           // 팀 이름은 'alt' 속성에 들어있는 값을 가져옴
           const teamName = el.querySelector('.emb img').getAttribute('alt').trim();
           
-          // 해당 팀의 선발 투수 이름을 'today-pitcher' 안에서 추출
-          const pitcherName = el.querySelector('.today-pitcher p').innerText.trim();
-          
+          // 투수 이름에서 'before' 클래스의 텍스트는 제외하고 나머지 텍스트만 추출.
+          const pitcherelement = el.querySelector('.today-pitcher p');
+
+          // 'before' 클래스를 제외한 나머지 텍스트만 가져오기
+          const pitcherName = pitcherelement.childNodes[1].nodeValue.trim();
+
           // 팀과 투수 이름을 객체로 배열에 추가
           data.push({ team: teamName, pitcher: pitcherName });
       });
