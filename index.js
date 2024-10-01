@@ -8,8 +8,11 @@ async function getStartingPitchers() {
     await page.goto('https://www.koreabaseball.com/Schedule/GameCenter/Main.aspx');
 
     const Date = await page.evaluate(() => {
-      const data = [];
-      document.querySelector('today')
+      const result = [];
+        const todaydate = document.querySelector('#lblGameDate').innerText.trim();
+        result.push({ 경기일자: todaydate });
+      
+      return result;
     })
 
     // 페이지에서 선발 투수 정보 가져오기
