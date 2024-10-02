@@ -1,3 +1,4 @@
+const fs = require('fs');
 const puppeteer = require('puppeteer');
 
 async function getStartingPitchers() {
@@ -27,32 +28,16 @@ async function getStartingPitchers() {
           results.push({ team: teamName, pitcher: pitcherName });
       });
   
-      return { date: gameDate, 선발선수: results };
+      return { date: gameDate, starting : results };
   });
   
   console.log(data); // 경기 날짜, 팀, 선발 투수 정보 출력
 
   await browser.close();
-  // 데이터를 가져와서 HTML에 출력하는 함수
-  function renderGameInfo(data) {
-    // 경기 날짜 출력
-    const gameDateElement = document.getElementById('game-date');
-    gameDateElement.textContent = `경기 날짜: ${data.date}`;
-    
-    // 팀 정보를 출력
-    const teamsListElement = document.getElementById('teams');
-    teamsListElement.innerHTML = ''; // 기존 내용 초기화
 
-    data.teams.forEach(team => {
-        const listItem = document.createElement('li'); // 새로운 <li> 요소 생성
-        listItem.textContent = `팀: ${team.team}, 선발 투수: ${team.pitcher}`;
-        teamsListElement.appendChild(listItem); // <ul>에 <li> 추가
-    });
-}
+  //! 데이터를 JSON 파일로 저장
+  fs.writeFileSync('data.json', JSON.stringify(data, null, 2), 'utf-8');
 
-// 데이터를 HTML에 출력
-renderGameInfo(data);
-  
 } 
 
 getStartingPitchers();
