@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1>KBO 경기 정보</h1>
+  <div id="game-info">
+      <h2 id="game-date"></h2>
+      <ul id="teams"></ul>
+  </div>
+
+  <script>
+      // data.json 파일을 불러와서 HTML에 출력하는 함수
+      fetch('data.json')
+      .then(response => response.json())
+      .then(data => {
+        // 경기 날짜 출력
+        document.getElementById('game-date').textContent = `경기 날짜: ${data.date}`;
+
+        // starting 배열이 존재하는지 확인
+        if (Array.isArray(data.starting)) {
+            const teamsElement = document.getElementById('teams');
+            teamsElement.innerHTML = ''; // 기존 내용을 초기화
+            
+            data.starting.forEach(team => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `팀: ${team.team} <br> 선발 투수: ${team.pitcher}`;
+                teamsElement.appendChild(listItem);
+            });
+        } else {
+            console.error('starting 데이터가 배열이 아닙니다.');
+        }
+      })
+      .catch(error => console.error('Error loading data:', error));
+  </script>
+</body>
+</html>
