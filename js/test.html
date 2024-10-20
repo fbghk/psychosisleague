@@ -18,24 +18,31 @@
       fetch('data.json')
       .then(response => response.json())
       .then(data => {
-        // 경기 날짜 출력
-        document.getElementById('game-date').textContent = `경기 날짜: ${data.date}`;
+          const gameDateElement = document.getElementById('game-date');
+          const teamsElement = document.getElementById('teams');
+          teamsElement.innerHTML = ''; // 기존 내용을 초기화
 
-        // starting 배열이 존재하는지 확인
-        if (Array.isArray(data.starting)) {
-            const teamsElement = document.getElementById('teams');
-            teamsElement.innerHTML = ''; // 기존 내용을 초기화
-            
-            data.starting.forEach(team => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `팀: ${team.team} <br> 선발 투수: ${team.pitcher}`;
-                teamsElement.appendChild(listItem);
-            });
-        } else {
-            console.error('starting 데이터가 배열이 아닙니다.');
-        }
+          // 'message' 필드가 있는 경우 (경기 취소 또는 오늘 경기가 없는 경우)
+          if (data.message) {
+              gameDateElement.textContent = data.message; // 취소 메시지 또는 경기 없음 메시지 출력
+          }
+          // 'date' 필드가 있고 'starting' 배열이 있는 경우
+          else if (data.date && Array.isArray(data.starting)) {
+              // 경기 날짜 출력
+              gameDateElement.textContent = `경기 날짜: ${data.date}`;
+
+              // 선발 투수 정보 출력
+              data.starting.forEach(team => {
+                  const listItem = document.createElement('li');
+                  listItem.innerHTML = `팀: ${team.team} <br> 선발 투수: ${team.pitcher}`;
+                  teamsElement.appendChild(listItem);
+              });
+          } else {
+              console.error('데이터 형식이 올바르지 않습니다.');
+          }
       })
       .catch(error => console.error('Error loading data:', error));
   </script>
+
 </body>
 </html>

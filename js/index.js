@@ -47,17 +47,19 @@ async function getStartingPitchers() {
 
   await browser.close();
 
-  //! 크롤링한 경기 날짜가 오늘 날짜와 일치하는지 확인
-  if (data.date && data.date.startsWith(formattedToday)) {
-    console.log(data); // 경기 정보 출력
-  } else {
-    console.log("금일 진행 예정인 경기가 없습니다."); // 날짜가 맞지 않으면 메시지만 출력
-  }
-
-
-  // 데이터를 JSON 파일로 저장
-  fs.writeFileSync('data.json', JSON.stringify(data, null, 2), 'utf-8');
-
+    //! 크롤링한 경기 날짜가 오늘 날짜와 일치하는지 확인
+    if (data.date && data.date.startsWith(formattedToday)) {
+      console.log(data); // 경기 정보 출력
+      // 데이터를 JSON 파일로 저장
+      fs.writeFileSync('data.json', JSON.stringify(data, null, 2), 'utf-8');
+    } else {
+      // 금일 경기가 없는 경우 JSON 파일에 저장
+      const noGameData = { message: "금일 진행 예정인 경기가 없습니다." };
+      console.log(noGameData.message); // 콘솔에 메시지 출력
+      
+      fs.writeFileSync('data.json', JSON.stringify(noGameData, null, 2), 'utf-8');
+    }
+  
 } 
 
 getStartingPitchers();
