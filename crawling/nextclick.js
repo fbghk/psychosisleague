@@ -1,7 +1,23 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
+//! 시간 체크 함수: 20시부터 02시까지 크롤링
+function isCrawlingTime() {
+    const now = new Date();
+    const hour = now.getHours();
+  
+    //! 20시(8PM) ~ 23시(11PM) 또는 0시(12AM) ~ 2시(2AM) 사이인 경우
+    return (hour >= 19 || hour < 2);
+}
+
 async function checkPitcherInfo() {
+
+    //! 시간 체크 함수 사용
+    if (!isCrawlingTime()) {
+        console.log('현재는 크롤링 가능 시간이 아닙니다. 크롤링을 종료합니다.');
+        return; // 크롤링 중단
+        }
+
     const browser = await puppeteer.launch({ 
         headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
