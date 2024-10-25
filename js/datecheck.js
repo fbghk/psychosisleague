@@ -70,25 +70,6 @@ async function checkNextGame() {
         console.log('='.repeat(50));
         console.log(`실행 시각: ${currentTime}`);
         
-        // // 4. 다음 경기 버튼 대기 및 클릭
-        // await page.waitForSelector('#lnkNext', { 
-        //     timeout: 5000,
-        //     visible: true
-        // });
-        
-        // const nextButton = await page.$('#lnkNext');
-        // if (!nextButton) {
-        //     throw new Error("내일 경기 버튼을 찾을 수 없습니다.");
-        // }
-        
-        // // 5. 클릭 실행
-        // await Promise.all([
-        //     page.waitForNavigation({ waitUntil: 'networkidle0' }),
-        //     nextButton.click()
-        // ]).catch(e => {
-        //     throw new Error(`클릭 또는 페이지 전환 중 오류 발생: ${e.message}`);
-        // });
-        
         // 6. 날짜 다시 확인
         const DisplayedDate = await page.evaluate(() => {
             const dateElement = document.querySelector('#lblGameDate');
