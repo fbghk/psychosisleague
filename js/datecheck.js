@@ -3,14 +3,32 @@ const schedule = require('node-schedule');
 const fs = require('fs');
 const path = require('path');
 
-// 디렉토리 확인 및 생성 함수
+//! 디렉토리 확인 및 생성 함수
 function ensureDirectoryExists(directory) {
   if (!fs.existsSync(directory)) {
       fs.mkdirSync(directory, { recursive: true });
   }
 }
 
+//! 시간 체크 함수: 20시부터 02시까지 크롤링
+function isCrawlingTime() {
+  const now = new Date();
+  const hour = now.getHours();
+
+  //! 20시(8PM) ~ 23시(11PM) 또는 0시(12AM) ~ 2시(2AM) 사이인 경우
+  return (hour >= 19 || hour < 2);
+}
+
+
+
 async function checkNextGame() {
+    //! 시간 체크 함수 사용
+    if (!isCrawlingTime()) {
+      console.log('현재는 크롤링 가능 시간이 아닙니다. 크롤링을 종료합니다.');
+      return; // 크롤링 중단
+    }
+
+  
     let browser;
     try {
         browser = await puppeteer.launch({ 
@@ -71,18 +89,18 @@ async function checkNextGame() {
         //     throw new Error(`클릭 또는 페이지 전환 중 오류 발생: ${e.message}`);
         // });
         
-        // 6. 클릭 후 날짜 다시 확인
-        const newDisplayedDate = await page.evaluate(() => {
+        // 6. 날짜 다시 확인
+        const DisplayedDate = await page.evaluate(() => {
             const dateElement = document.querySelector('#lblGameDate');
             return dateElement ? dateElement.textContent : null;
         });
 
-        const newWebpageDate = newDisplayedDate ? newDisplayedDate.split('(')[0] : null;
+        const WebpageDate = DisplayedDate ? DisplayedDate.split('(')[0] : null;
 
-        console.log('웹페이지 날짜:', newWebpageDate);
+        console.log('웹페이지 날짜:', WebpageDate);
         console.log('현재 날짜:', currentDate);
 
-        if (newWebpageDate === currentDate) {
+        if (WebpageDate === currentDate) {
             console.log(`당일 경기 일정입니다. (확인 시간: ${currentTime})`);
         } else {
             console.log(`다음날 경기 일정입니다. (확인 시간: ${currentTime})`);
