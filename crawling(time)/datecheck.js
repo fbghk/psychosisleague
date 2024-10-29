@@ -3,26 +3,26 @@ const schedule = require('node-schedule');
 const fs = require('fs');
 const path = require('path');
 
-//! 디렉토리 확인 및 생성 함수
+// 디렉토리 확인 및 생성 함수
 function ensureDirectoryExists(directory) {
   if (!fs.existsSync(directory)) {
       fs.mkdirSync(directory, { recursive: true });
   }
 }
 
-//! 시간 체크 함수: 20시부터 02시까지 크롤링
+// 시간 체크 함수: 20시부터 02시까지 크롤링
 function isCrawlingTime() {
   const now = new Date();
   const hour = now.getHours();
 
-  //! 20시(8PM) ~ 23시(11PM) 또는 0시(12AM) ~ 2시(2AM) 사이인 경우
+  // 20시(8PM) ~ 23시(11PM) 또는 0시(12AM) ~ 2시(2AM) 사이인 경우
   return (hour >= 19 || hour < 2);
 }
 
 
 
 async function checkNextGame() {
-    //! 시간 체크 함수 사용
+    // 시간 체크 함수 사용
     if (!isCrawlingTime()) {
       console.log('현재는 크롤링 가능 시간이 아닙니다. 크롤링을 종료합니다.');
       return; // 크롤링 중단
@@ -119,11 +119,11 @@ async function checkNextGame() {
                 console.log(`[${currentTime}] 소속팀: ${info.team}, 선발투수: ${info.pitcher}`);
             });
             
-            //! JSON 파일 저장 경로
+            // JSON 파일 저장 경로
             const jsonDir = path.join(__dirname, 'json');
             ensureDirectoryExists(jsonDir);
             
-            //! 현재 시간별로 JSON 파일 저장
+            // 현재 시간별로 JSON 파일 저장
             fs.writeFileSync(path.join(jsonDir, `pitcher_info_${currentDate}_${currentTime.replace(/:/g, '-')}.json`), JSON.stringify({
               time: currentTime,
               pitchers: pitcherInfo
@@ -132,7 +132,7 @@ async function checkNextGame() {
 
         console.log('='.repeat(50));
 
-        //! 10. 스크린샷 저장 경로
+        // 10. 스크린샷 저장 경로
         const screenshotDir = path.join(__dirname, 'screenshot');
         ensureDirectoryExists(screenshotDir);
 
