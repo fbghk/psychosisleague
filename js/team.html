@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>팀 선발 투수 정보</title>
+</head>
+<body>
+  <h1 id="team-title">팀 정보</h1>
+  <div id="team-info"></div>
+
+  <script>
+    // URL에서 팀 이름을 가져오는 함수
+    function getTeamNameFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('team');
+    }
+
+    // 팀 이름에 해당하는 투수 정보 표시
+    const teamName = getTeamNameFromURL();
+    const teamTitleElement = document.getElementById('team-title');
+    const teamInfoElement = document.getElementById('team-info');
+    
+    if (teamName) {
+      teamTitleElement.textContent = `${teamName} 선발 투수 정보`;
+
+      fetch('data.json')
+        .then(response => response.json())
+        .then(data => {
+          const teamData = data.starting.find(team => team.team === teamName);
+
+          if (teamData) {
+            teamInfoElement.innerHTML = `
+              <p>팀: ${teamData.team}</p>
+              <p>선발 투수: ${teamData.pitcher}</p>
+            `;
+          } else {
+            teamInfoElement.innerHTML = `<p>선발 투수 정보를 찾을 수 없습니다.</p>`;
+          }
+        })
+        .catch(error => {
+          console.error('Error loading data:', error);
+          teamInfoElement.innerHTML = `<p>데이터 로드 오류가 발생했습니다.</p>`;
+        });
+    } else {
+      teamInfoElement.innerHTML = `<p>올바르지 않은 접근입니다.</p>`;
+    }
+  </script>
+</body>
+</html>
