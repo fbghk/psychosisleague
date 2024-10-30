@@ -11,86 +11,61 @@
       margin: 5px;
       cursor: pointer;
       font-size: 16px;
-      background-color:midnightblue;
+      background-color: midnightblue;
       color: white;
       border: none;
       border-radius: 5px;
     }
     .team-button:hover {
-      background-color:cornflowerblue;
+      background-color: cornflowerblue;
+      color: midnightblue;
     }
   </style>
 </head>
 <body>
-  <h1>KBO 경기 정보</h1>
-
-  <!-- 팀별 버튼 생성 -->
-  <div id="team-buttons">
-    <button class="team-button" data-team="KIA">기아 타이거즈</button>
-    <button class="team-button" data-team="삼성">삼성 라이온즈</button>
-    <button class="team-button" data-team="LG">엘지 트윈스</button>
-    <button class="team-button" data-team="두산">두산 베어스</button>
-    <button class="team-button" data-team="SSG">SSG 랜더스</button>
-    <button class="team-button" data-team="KT">KT wiz</button>
-    <button class="team-button" data-team="롯데">롯데 자이언츠</button>
-    <button class="team-button" data-team="한화">한화 이글스</button>
-    <button class="team-button" data-team="NC">NC 다이노스</button>
-    <button class="team-button" data-team="키움">키움 히어로즈</button>
-  </div>
-
-  <div id="game-info">
-      <h2 id="game-date"></h2>
-      <ul id="team-info"></ul>
-  </div>
+    <h1 id="game-date"></h1>
+    <h2>KBO 경기 정보</h2>
+    <!-- 팀별 버튼 생성 -->
+    <div id="team-buttons">
+        <button class="team-button" data-team="KIA">기아 타이거즈</button>
+        <button class="team-button" data-team="삼성">삼성 라이온즈</button>
+        <button class="team-button" data-team="LG">엘지 트윈스</button>
+        <button class="team-button" data-team="두산">두산 베어스</button>
+        <button class="team-button" data-team="SSG">SSG 랜더스</button>
+        <button class="team-button" data-team="KT">KT wiz</button>
+        <button class="team-button" data-team="롯데">롯데 자이언츠</button>
+        <button class="team-button" data-team="한화">한화 이글스</button>
+        <button class="team-button" data-team="NC">NC 다이노스</button>
+        <button class="team-button" data-team="키움">키움 히어로즈</button>
+    </div>
 
   <script>
-    // JSON 데이터를 로드하여 각 팀 버튼 클릭에 따른 정보 표시
-    let gameData = {};
-
-    // data.json 파일 불러오기
-    fetch('data.json')
+  
+  fetch('data.json')
       .then(response => response.json())
       .then(data => {
-        gameData = data;
-        
-        // 경기 날짜 출력
-        const gameDateElement = document.getElementById('game-date');
-        if (data.date) {
-          gameDateElement.textContent = `경기 날짜: ${data.date}`;
-        } else if (data.message) {
-          gameDateElement.textContent = data.message;
-        }
+          const gameDateElement = document.getElementById('game-date');
+
+          // 'date' 필드가 있고 'starting' 배열이 있는 경우
+          if (data.date) {
+              // 경기 날짜 출력
+              gameDateElement.textContent = `${data.date}`;
+
+          } else {
+              console.error('데이터 형식이 올바르지 않습니다.');
+          }
       })
       .catch(error => console.error('Error loading data:', error));
 
-    // 팀 버튼 클릭 이벤트 처리
+
+    // 팀 버튼 클릭 시 team.html로 이동
     document.querySelectorAll('.team-button').forEach(button => {
       button.addEventListener('click', () => {
         const teamName = button.getAttribute('data-team');
-        displayTeamInfo(teamName);
+        window.location.href = `team.html?team=${encodeURIComponent(teamName)}`;
       });
     });
-
-    // 특정 팀의 선발 투수 정보를 표시하는 함수
-    function displayTeamInfo(teamName) {
-      const teamInfoElement = document.getElementById('team-info');
-      teamInfoElement.innerHTML = ''; // 기존 내용 초기화
-
-      if (!gameData.starting) {
-        teamInfoElement.innerHTML = `<li>선발 투수 정보가 없습니다.</li>`;
-        return;
-      }
-
-      const teamData = gameData.starting.find(team => team.team === teamName);
-
-      if (teamData) {
-        const listItem = document.createElement('li');
-        listItem.innerHTML = `팀: ${teamData.team} <br> 선발 투수: ${teamData.pitcher}`;
-        teamInfoElement.appendChild(listItem);
-      } else {
-        teamInfoElement.innerHTML = `<li>${teamName} 팀의 선발 투수 정보가 없습니다.</li>`;
-      }
-    }
   </script>
+
 </body>
 </html>
