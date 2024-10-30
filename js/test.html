@@ -4,45 +4,93 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>KBO 경기 정보</title>
+  <style>
+    .team-button {
+      padding: 10px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      background-color:midnightblue;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .team-button:hover {
+      background-color:cornflowerblue;
+    }
+  </style>
 </head>
 <body>
   <h1>KBO 경기 정보</h1>
+
+  <!-- 팀별 버튼 생성 -->
+  <div id="team-buttons">
+    <button class="team-button" data-team="KIA">기아 타이거즈</button>
+    <button class="team-button" data-team="삼성">삼성 라이온즈</button>
+    <button class="team-button" data-team="LG">엘지 트윈스</button>
+    <button class="team-button" data-team="두산">두산 베어스</button>
+    <button class="team-button" data-team="SSG">SSG 랜더스</button>
+    <button class="team-button" data-team="KT">KT wiz</button>
+    <button class="team-button" data-team="롯데">롯데 자이언츠</button>
+    <button class="team-button" data-team="한화">한화 이글스</button>
+    <button class="team-button" data-team="NC">NC 다이노스</button>
+    <button class="team-button" data-team="키움">키움 히어로즈</button>
+  </div>
+
   <div id="game-info">
       <h2 id="game-date"></h2>
-      <ul id="teams"></ul>
+      <ul id="team-info"></ul>
   </div>
 
   <script>
-      // data.json 파일을 불러와서 HTML에 출력하는 함수
-      fetch('data.json')
+    // JSON 데이터를 로드하여 각 팀 버튼 클릭에 따른 정보 표시
+    let gameData = {};
+
+    // data.json 파일 불러오기
+    fetch('data.json')
       .then(response => response.json())
       .then(data => {
-          const gameDateElement = document.getElementById('game-date');
-          const teamsElement = document.getElementById('teams');
-          teamsElement.innerHTML = ''; // 기존 내용을 초기화
-
-          // 'message' 필드가 있는 경우 (경기 취소 또는 오늘 경기가 없는 경우)
-          if (data.message) {
-              gameDateElement.textContent = data.message; // 취소 메시지 또는 경기 없음 메시지 출력
-          }
-          // 'date' 필드가 있고 'starting' 배열이 있는 경우
-          else if (data.date && Array.isArray(data.starting)) {
-              // 경기 날짜 출력
-              gameDateElement.textContent = `경기 날짜: ${data.date}`;
-
-              // 선발 투수 정보 출력
-              data.starting.forEach(team => {
-                  const listItem = document.createElement('li');
-                  listItem.innerHTML = `팀: ${team.team} <br> 선발 투수: ${team.pitcher}`;
-                  teamsElement.appendChild(listItem);
-              });
-          } else {
-              console.error('데이터 형식이 올바르지 않습니다.');
-          }
+        gameData = data;
+        
+        // 경기 날짜 출력
+        const gameDateElement = document.getElementById('game-date');
+        if (data.date) {
+          gameDateElement.textContent = `경기 날짜: ${data.date}`;
+        } else if (data.message) {
+          gameDateElement.textContent = data.message;
+        }
       })
       .catch(error => console.error('Error loading data:', error));
-  </script>
 
+    // 팀 버튼 클릭 이벤트 처리
+    document.querySelectorAll('.team-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const teamName = button.getAttribute('data-team');
+        displayTeamInfo(teamName);
+      });
+    });
+
+    // 특정 팀의 선발 투수 정보를 표시하는 함수
+    function displayTeamInfo(teamName) {
+      const teamInfoElement = document.getElementById('team-info');
+      teamInfoElement.innerHTML = ''; // 기존 내용 초기화
+
+      if (!gameData.starting) {
+        teamInfoElement.innerHTML = `<li>선발 투수 정보가 없습니다.</li>`;
+        return;
+      }
+
+      const teamData = gameData.starting.find(team => team.team === teamName);
+
+      if (teamData) {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `팀: ${teamData.team} <br> 선발 투수: ${teamData.pitcher}`;
+        teamInfoElement.appendChild(listItem);
+      } else {
+        teamInfoElement.innerHTML = `<li>${teamName} 팀의 선발 투수 정보가 없습니다.</li>`;
+      }
+    }
+  </script>
 </body>
 </html>
