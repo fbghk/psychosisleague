@@ -34,8 +34,8 @@ async function crawlKBOPlayerRegistration() {
             }
         }
         
-        // 데이터 수집을 위해 잠시 대기
-        await page.waitForTimeout(2000);
+        //! 데이터 수집을 위해 잠시 대기 (setTimeout 사용)
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         // .row div 안의 모든 데이터 수집
         const data = await page.evaluate(() => {
