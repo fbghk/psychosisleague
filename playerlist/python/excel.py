@@ -13,18 +13,20 @@ data = """
 
 # 공백 및 불필요한 부분 제거하고 리스트로 변환
 cleaned_data = re.sub(r'[\t\n]+', ' ', data)
-elements = re.findall(r'[^\s]+', cleaned_data)
 
-# 5행 nn열로 변환 (행 개수는 원하는 대로 설정 가능)
+# 키와 몸무게 패턴을 유지하면서 단어 리스트를 추출
+elements = re.findall(r'\d+cm, \d+kg|[^\s]+', cleaned_data)
+
+# 5열로 변환 (원하는 대로 설정 가능)
 num_columns = 5
 rows = [elements[i:i+num_columns] for i in range(0, len(elements), num_columns)]
 
 # DataFrame 생성
-df = pd.DataFrame(rows)
+df = pd.DataFrame(rows, columns=['등번호', '이름', '투타유형', '생년월일', '체격'])
 
 # DataFrame 출력
 print(df)
 
-# 정리된 데이터를 JSON 파일로 저장하기
+# JSON 파일로 저장하기
 df.to_json('result.json', orient='records', force_ascii=False)
 print("JSON 파일로 저장되었습니다.")
