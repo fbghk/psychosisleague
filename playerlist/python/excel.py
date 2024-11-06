@@ -24,9 +24,13 @@ rows = [elements[i:i+num_columns] for i in range(0, len(elements), num_columns)]
 # DataFrame 생성
 df = pd.DataFrame(rows, columns=['등번호', '이름', '투타유형', '생년월일', '체격'])
 
-# DataFrame 출력
-print(df)
+# 시작과 끝 위치 탐색
+start_index = df[df['이름'] == '투수'].index[0]  # 시작 위치 ("투수" 행 포함)
+end_index = df[df['이름'] == '포수'].index[0]  # 끝 위치 ("포수" 행 포함)
+
+# 시작 부분 포함, 끝 부분 제외하여 추출
+filtered_df = df.iloc[start_index:end_index]
 
 # JSON 파일로 저장하기
-df.to_json('result.json', orient='records', force_ascii=False)
-print("JSON 파일로 저장되었습니다.")
+filtered_df.to_json('filtered_result.json', orient='records', force_ascii=False)
+print("필터링된 JSON 파일로 저장되었습니다.")
