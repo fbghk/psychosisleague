@@ -19,6 +19,12 @@ elements = re.findall(r'[^\s]+', cleaned_data)
 num_columns = 5
 rows = [elements[i:i+num_columns] for i in range(0, len(elements), num_columns)]
 
-# DataFrame 생성 및 출력
+# DataFrame 생성
 df = pd.DataFrame(rows)
+
+# DataFrame 출력
 print(df)
+
+# 정리된 데이터를 JSON 파일로 저장하기
+df.to_json('result.json', orient='records', force_ascii=False)
+print("JSON 파일로 저장되었습니다.")
