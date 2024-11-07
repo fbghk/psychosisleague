@@ -37,7 +37,7 @@ const startIdx = df.findIndex(row => row['이름'] === '투수');  // "투수" �
 const endIdx = df.findIndex(row => row['이름'] === '포수');  // "포수" 행 포함
 
 // 시작 부분 포함, 끝 부분 제외하여 추출
-const filteredData = df.slice(startIdx, endIdx);
+const filteredData = df.slice(startIdx + 1, endIdx);
 
 // JSON 파일로 저장하기
 fs.writeFileSync('filtered_result.json', JSON.stringify(filteredData, null, 2), 'utf8');
