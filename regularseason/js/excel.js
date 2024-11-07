@@ -32,13 +32,14 @@ const df = rows.map(row => ({
   '체격': row[4]
 }));
 
-// 시작과 끝 위치 탐색
-const startIdx = df.findIndex(row => row['이름'] === '투수');  // "투수" 행 포함
-const endIdx = df.findIndex(row => row['이름'] === '포수');  // "포수" 행 포함
+// 데이터 예시 (df는 이미 전처리된 데이터프레임이라고 가정)
+const startIdx = df.findIndex(row => row['이름'] === '투수');
+const endIdx = df.findIndex(row => row['이름'] === '포수');
 
-// 시작 부분 포함, 끝 부분 제외하여 추출
-const filteredData = df.slice(startIdx + 1, endIdx);
+// 시작과 끝 부분 모두 제외하여 "이름" 열만 추출
+const filteredNames = df.slice(startIdx + 1, endIdx).map(row => row['이름']);
 
-// JSON 파일로 저장하기
-fs.writeFileSync('filtered_result.json', JSON.stringify(filteredData, null, 2), 'utf8');
-console.log("필터링된 JSON 파일로 저장되었습니다.");
+// 이름 목록을 JSON 파일로 저장
+fs.writeFileSync('filtered_names.json', JSON.stringify(filteredNames, null, 2), 'utf-8');
+
+console.log("이름 목록이 JSON 파일로 저장되었습니다.");
