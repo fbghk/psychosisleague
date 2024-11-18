@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select  # Select 추가
 import time
 
 # Selenium Manager가 ChromeDriver를 자동으로 관리
@@ -11,7 +12,6 @@ driver.get(url)
 time.sleep(2)  # 페이지 로딩 대기
 
 # 팀 선택 예시
-# 여기부터는 기존 코드처럼 사용 가능
 team_select = Select(driver.find_element(By.ID, "cphContents_cphContents_cphContents_ddlTeam"))
 team_select.select_by_value("HH")
 time.sleep(2)
