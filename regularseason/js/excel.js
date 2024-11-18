@@ -1,23 +1,43 @@
-const fs = require('fs');
+const { Builder, By, until, Select } = require('selenium-webdriver');
 
-// 데이터 파일 읽기
-const data = fs.readFileSync('../data.json', 'utf-8');
+(async function scrapeKBO() {
+    // Chrome 브라우저를 자동으로 열기
+    let driver = await new Builder().forBrowser('chrome').build();
 
-// 정규식으로 공백과 특수 문자 제거 후 배열로 추출
-const playersData = data.match(/[가-힣]+|\d+cm, \d+kg|\d{4}-\d{2}-\d{2}|우투|좌투|우타|좌타/g) || [];
+    try {
+        // KBO 선수 검색 페이지 열기
+        await driver.get('https://www.koreabaseball.com/Player/Search.aspx');
 
-// "투수"와 "포수" 사이의 데이터 필터링
-const startIdx = playersData.indexOf("투수");
-const endIdx = playersData.indexOf("포수");
-const pitcherData = playersData.slice(startIdx + 1, endIdx);
+        // 페이지 로딩 대기
+        await driver.sleep(2000);
 
-// 각 선수의 이름만 추출하여 배열에 저장
-const pitcherNames = [];
-for (let i = 0; i < pitcherData.length; i += 5) {
-  pitcherNames.push(pitcherData[i + 1]); // 선수 이름은 항상 두 번째 위치에 있다고 가정
-}
+        // 팀 선택 (한화로 설정)
+        const teamSelect = await driver.findElement(By.id("cphContents_cphContents_cphContents_ddlTeam"));
+        await teamSelect.findElement(By.css("option[value='HH']")).click();
 
-// 이름 목록을 JSON 파일로 저장
-fs.writeFileSync('filtered_pitcher_names.json', JSON.stringify(pitcherNames, null, 2), 'utf-8');
+        // 데이터 로딩 대기
+        await driver.sleep(2000);
 
-console.log("투수 이름 목록이 JSON 파일로 저장되었습니다.");
+        // 테이블 데이터 추출
+        const tableRows = await driver.findElements(By.css("div.inquiry table.tEx tbody tr"));
+
+        for (let row of tableRows) {
+            const cells = await row.findElements(By.tagName("td"));
+            if (cells.length > 0) {
+                const data = {
+                    "등번호": await cells[0].getText(),
+                    "선수명": await cells[1].getText(),
+                    "팀명": await cells[2].getText(),
+                    "포지션": await cells[3].getText(),
+                    "생년월일": await cells[4].getText(),
+                    "체격": await cells[5].getText(),
+                    "출신교": await cells[6].getText()
+                };
+                console.log(data);
+            }
+        }
+    } finally {
+        // 브라우저 닫기
+        await driver.quit();
+    }
+})();
