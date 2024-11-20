@@ -1,16 +1,25 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
-const teams = [
-    "KIA", "삼성", "LG", "두산", "SSG",
-    "KT", "롯데", "한화", "NC", "키움"
+// 팀 정보를 매핑하는 객체 생성
+const teamMapping = [
+    { name: "KIA", id: "HT" },
+    { name: "삼성", id: "SS" },
+    { name: "LG", id: "LG" },
+    { name: "두산", id: "OB" },
+    { name: "SSG", id: "SK" },
+    { name: "KT", id: "KT" },
+    { name: "롯데", id: "LT" },
+    { name: "한화", id: "HH" },
+    { name: "NC", id: "NC" },
+    { name: "키움", id: "WO" }
 ];
 
 async function crawlKBOPlayerRegistration() {
     try {
-        // 브라우저 실행
         const browser = await puppeteer.launch({
-            headless: false  // 브라우저 동작을 확인하기 위해 headless: false로 설정
+            headless: false,
+            defaultViewport: null
         });
         const page = await browser.newPage();
 
@@ -35,61 +44,52 @@ async function crawlKBOPlayerRegistration() {
                 break;
             }
         }
-        
-        //! 데이터 수집을 위해 잠시 대기 (setTimeout 사용)
+
+        // 데이터 수집을 위해 잠시 대기
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        for (const team of teams) {
-            // 각 구단 엠블럼 클릭
-            await page.waitForSelector(`img[alt="${team}"]`);
-            await page.click(`img[alt="${team}"]`);
-            
-            // 구단 데이터 수집
-            const data = await page.evaluate(() => {
-                const rows = document.querySelectorAll('.row');
-                const result = [];
-                
-                rows.forEach(row => {
-                    const rowData = {
-                        content: row.textContent.trim(),
-                        html: row.innerHTML
-                    };
-                    result.push(rowData);
-                });
-                
-                return result;
-            });
+        for (const team of teamMapping) {
+            try {
+                // 각 구단 링크 클릭
+                await page.waitForSelector(`li[data-id="${team.id}"] a`);
+                await page.evaluate((teamId) => {
+                    fnSearchChange(teamId);
+                }, team.id);
 
-            // 각 구단별로 JSON 파일로 저장
-            const fileName = `${team}.json`;
-            fs.writeFileSync(fileName, JSON.stringify(data, null, 2), 'utf-8');
-            console.log(`${team} 구단의 데이터가 ${fileName}로 저장되었습니다.`);
-            
-            // 구단 목록 페이지로 돌아가기
-            await page.goto('https://www.koreabaseball.com/Player/Register.aspx');
-            
-            // 달력 클릭 후 다시 날짜 선택
-            await page.waitForSelector('.ui-datepicker-trigger');
-            await page.click('.ui-datepicker-trigger');
-            await page.click('.ui-icon-circle-triangle-w');
-            const dateElements2 = await page.$$('a.ui-state-default');
-            for (const element of dateElements2) {
-                const text = await page.evaluate(el => el.textContent, element);
-                if (text === '3') {
-                    await element.click();
-                    break;
-                }
+                // 데이터 로딩 대기
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // 구단 데이터 수집
+                const data = await page.evaluate(() => {
+                    const rows = document.querySelectorAll('.row');
+                    const result = [];
+                    
+                    rows.forEach(row => {
+                        const rowData = {
+                            content: row.textContent.trim(),
+                            html: row.innerHTML
+                        };
+                        result.push(rowData);
+                    });
+                    
+                    return result;
+                });
+
+                // 각 구단별로 JSON 파일로 저장
+                const fileName = `${team.name}.json`;
+                fs.writeFileSync(fileName, JSON.stringify(data, null, 2), 'utf-8');
+                console.log(`${team.name} 구단의 데이터가 ${fileName}로 저장되었습니다.`);
+
+            } catch (error) {
+                console.error(`${team.name} 구단 데이터 수집 중 오류 발생:`, error);
+                continue; // 오류가 발생해도 다음 팀 진행
             }
-            
-            // 잠시 대기 (구단마다 데이터가 다르므로)
-            await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
         // 브라우저 종료
         await browser.close();
-        
         console.log('크롤링이 완료되었습니다. 각 구단별 JSON 파일을 확인해주세요.');
-        
+
     } catch (error) {
         console.error('크롤링 중 오류가 발생했습니다:', error);
     }
