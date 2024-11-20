@@ -1,7 +1,6 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
-// 팀 정보를 매핑하는 객체 생성
 const teamMapping = [
     { name: "KIA", id: "HT" },
     { name: "삼성", id: "SS" },
@@ -50,26 +49,29 @@ async function crawlKBOPlayerRegistration() {
 
         for (const team of teamMapping) {
             try {
-                // 각 구단 링크 클릭
-                await page.waitForSelector(`li[data-id="${team.id}"] a`);
-                await page.evaluate((teamId) => {
-                    fnSearchChange(teamId);
-                }, team.id);
+                // 각 구단 링크를 찾아서 클릭
+                const teamSelector = `li[data-id="${team.id}"] a`;
+                await page.waitForSelector(teamSelector);
+                await page.click(teamSelector);
 
                 // 데이터 로딩 대기
                 await new Promise(resolve => setTimeout(resolve, 2000));
 
                 // 구단 데이터 수집
                 const data = await page.evaluate(() => {
-                    const rows = document.querySelectorAll('.row');
+                    const rows = document.querySelectorAll('#cphContents_cphContents_cphContents_udpRecord table tbody tr');
                     const result = [];
                     
                     rows.forEach(row => {
-                        const rowData = {
-                            content: row.textContent.trim(),
-                            html: row.innerHTML
+                        const columns = row.querySelectorAll('td');
+                        const playerData = {
+                            number: columns[0]?.textContent.trim(),
+                            name: columns[1]?.textContent.trim(),
+                            position: columns[2]?.textContent.trim(),
+                            birth: columns[3]?.textContent.trim(),
+                            status: columns[4]?.textContent.trim()
                         };
-                        result.push(rowData);
+                        result.push(playerData);
                     });
                     
                     return result;
@@ -82,11 +84,10 @@ async function crawlKBOPlayerRegistration() {
 
             } catch (error) {
                 console.error(`${team.name} 구단 데이터 수집 중 오류 발생:`, error);
-                continue; // 오류가 발생해도 다음 팀 진행
+                continue;
             }
         }
 
-        // 브라우저 종료
         await browser.close();
         console.log('크롤링이 완료되었습니다. 각 구단별 JSON 파일을 확인해주세요.');
 
@@ -95,5 +96,4 @@ async function crawlKBOPlayerRegistration() {
     }
 }
 
-// 크롤링 실행
 crawlKBOPlayerRegistration();
