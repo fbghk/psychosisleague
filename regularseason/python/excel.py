@@ -1,34 +1,31 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select  # Select 추가
-import time
+import re
+import pandas as pd
 
-# Selenium Manager가 ChromeDriver를 자동으로 관리
-driver = webdriver.Chrome()
+# 크롤링한 데이터
+data = """
 
-# 크롤링할 페이지로 이동
-url = "https://www.koreabaseball.com/Player/Search.aspx"
-driver.get(url)
-time.sleep(2)  # 페이지 로딩 대기
+"""
 
-# 팀 선택 예시
-team_select = Select(driver.find_element(By.ID, "cphContents_cphContents_cphContents_ddlTeam"))
-team_select.select_by_value("HH")
-time.sleep(2)
+# 공백 및 불필요한 부분 제거하고 리스트로 변환
+cleaned_data = re.sub(r'[\t\n]+', ' ', data)
 
-# 원하는 데이터 추출 코드 작성
-table = driver.find_element(By.CSS_SELECTOR, "div.inquiry table.tEx tbody")
-for row in table.find_elements(By.TAG_NAME, "tr"):
-    cells = row.find_elements(By.TAG_NAME, "td")
-    if len(cells) > 0:
-        print({
-            "등번호": cells[0].text,
-            "선수명": cells[1].text,
-            "팀명": cells[2].text,
-            "포지션": cells[3].text,
-            "생년월일": cells[4].text,
-            "체격": cells[5].text,
-            "출신교": cells[6].text
-        })
+# 키와 몸무게 패턴을 유지하면서 단어 리스트를 추출
+elements = re.findall(r'\d+cm, \d+kg|[^\s]+', cleaned_data)
 
-driver.quit()
+# 5열로 변환 (원하는 대로 설정 가능)
+num_columns = 5
+rows = [elements[i:i+num_columns] for i in range(0, len(elements), num_columns)]
+
+# DataFrame 생성
+df = pd.DataFrame(rows, columns=['등번호', '이름', '투타유형', '생년월일', '체격'])
+
+# 시작과 끝 위치 탐색
+start_index = df[df['이름'] == '투수'].index[0]  # 시작 위치 ("투수" 행 포함)
+end_index = df[df['이름'] == '포수'].index[0]  # 끝 위치 ("포수" 행 포함)
+
+# 시작 부분 포함, 끝 부분 제외하여 추출
+filtered_df = df.iloc[start_index:end_index]
+
+# JSON 파일로 저장하기
+filtered_df.to_json('filtered_result.json', orient='records', force_ascii=False)
+print("필터링된 JSON 파일로 저장되었습니다.")
