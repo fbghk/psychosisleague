@@ -1,34 +1,19 @@
-import re
-import pandas as pd
 import json
 
-# 데이터 파일 읽기
+# JSON 파일 읽기
 with open('data.json', 'r', encoding='utf-8') as file:
-      json_data = json.load(file)
+    json_data = json.load(file)
 
 # 첫 번째 객체의 "content" 값 추출
 data = json_data[0]['content']
 
-# 공백 및 불필요한 부분 제거하고 리스트로 변환
-cleaned_data = re.sub(r'[\t\n]+', ' ', data)
+# content 값 출력
+print("Content 값 확인:")
+print(data)
 
-# 키와 몸무게 패턴을 유지하면서 단어 리스트를 추출
-elements = re.findall(r'\d+cm, \d+kg|[^\s]+', cleaned_data)
+# content 값을 JSON 형태로 저장
+output_data = {"content": data}
+with open('content_output.json', 'w', encoding='utf-8') as output_file:
+    json.dump(output_data, output_file, ensure_ascii=False, indent=4)
 
-# 5열로 변환 (원하는 대로 설정 가능)
-num_columns = 5
-rows = [elements[i:i+num_columns] for i in range(0, len(elements), num_columns)]
-
-# DataFrame 생성
-df = pd.DataFrame(rows, columns=['등번호', '이름', '투타유형', '생년월일', '체격'])
-
-# 시작과 끝 위치 탐색
-start_index = df[df['이름'] == '투수'].index[0]  # 시작 위치 ("투수" 행 포함)
-end_index = df[df['이름'] == '포수'].index[0]  # 끝 위치 ("포수" 행 포함)
-
-# 시작 부분 포함, 끝 부분 제외하여 추출
-filtered_df = df.iloc[start_index:end_index]
-
-# JSON 파일로 저장하기
-filtered_df.to_json('filtered_result.json', orient='records', force_ascii=False)
-print("필터링된 JSON 파일로 저장되었습니다.")
+print("Content 값이 'content_output.json' 파일로 저장되었습니다.")
