@@ -17,8 +17,9 @@ matches = re.search(pattern, data)
 if matches:
     pitcher_data = matches.group(1).strip()
     
-    # 이름 추출을 위한 패턴
-    name_pattern = r'\d+\s+([\w가-힣]+)'
+    # 이름 추출을 위한 패턴 수정
+    # 숫자 다음에 오는 이름만 추출하되, cm가 포함되지 않은 행만 추출
+    name_pattern = r'\d+\s+([\w가-힣]+)(?=\s+[우좌]투)'
     
     # 모든 이름 찾기
     names = re.findall(name_pattern, pitcher_data)
