@@ -1,4 +1,4 @@
-//! make test 중 #1
+//! make test 중 #2
 const fs = require('fs');
 
 // JSON 데이터 읽기
