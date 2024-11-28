@@ -1,51 +1,41 @@
-const { Builder, By } = require('selenium-webdriver');
-const fs = require('fs');  // fs 모듈 추가 (파일 작업을 위해)
+const fs = require('fs');
 
-(async function scrapeKBO() {
-    // Chrome 브라우저를 자동으로 열기
-    let driver = await new Builder().forBrowser('chrome').build();
+// JSON 데이터 읽기
+const jsonData = JSON.parse(fs.readFileSync('data.json', 'utf8'));
 
-    try {
-        // KBO 선수 검색 페이지 열기
-        await driver.get('https://www.koreabaseball.com/Player/Search.aspx');
+// 첫 번째 객체의 "content" 값 추출
+const data = jsonData[0].content;
 
-        // 페이지 로딩 대기
-        await driver.sleep(2000);
+// 공백 및 불필요한 부분 제거하고 리스트로 변환
+const cleanedData = data.replace(/[\t\n]+/g, ' ');
 
-        // 팀 선택 (한화로 설정)
-        const teamSelect = await driver.findElement(By.id("cphContents_cphContents_cphContents_ddlTeam"));
-        await teamSelect.findElement(By.css("option[value='HH']")).click();
+// 키와 몸무게 패턴을 유지하면서 단어 리스트를 추출
+const elements = cleanedData.match(/\d+cm, \d+kg|[^\s]+/g);
 
-        // 데이터 로딩 대기
-        await driver.sleep(2000);
+// 5열로 변환 (원하는 대로 설정 가능)
+const numColumns = 5;
+const rows = [];
+for (let i = 0; i < elements.length; i += numColumns) {
+    rows.push(elements.slice(i, i + numColumns));
+}
 
-        // 테이블 데이터 추출
-        const tableRows = await driver.findElements(By.css("div.inquiry table.tEx tbody tr"));
+// DataFrame 대신 배열of 객체로 변환
+const df = rows.map(row => ({
+    '등번호': row[0],
+    '이름': row[1],
+    '투타유형': row[2],
+    '생년월일': row[3],
+    '체격': row[4]
+}));
 
-        let playerData = [];  // 선수 정보를 저장할 배열
+// 시작과 끝 위치 탐색
+const startIndex = df.findIndex(row => row['이름'] === '투수');
+const endIndex = df.findIndex(row => row['이름'] === '포수');
 
-        for (let row of tableRows) {
-            const cells = await row.findElements(By.tagName("td"));
-            if (cells.length > 0) {
-                const data = {
-                    "등번호": await cells[0].getText(),
-                    "선수명": await cells[1].getText(),
-                    "팀명": await cells[2].getText(),
-                    "포지션": await cells[3].getText(),
-                    "생년월일": await cells[4].getText(),
-                    "체격": await cells[5].getText(),
-                    "출신교": await cells[6].getText()
-                };
-                playerData.push(data);  // 배열에 데이터 추가
-            }
-        }
+// 시작 부분 포함, 끝 부분 제외하여 추출
+const filteredDf = df.slice(startIndex, endIndex);
 
-        // JSON 파일로 저장
-        fs.writeFileSync('players.json', JSON.stringify(playerData, null, 2), 'utf8');
-        console.log('데이터가 players.json 파일에 저장되었습니다.');
+// JSON 파일로 저장
+fs.writeFileSync('filtered_result.json', JSON.stringify(filteredDf, null, 2), 'utf8');
 
-    } finally {
-        // 브라우저 닫기
-        await driver.quit();
-    }
-})();
+console.log("필터링된 JSON 파일로 저장되었습니다.");
