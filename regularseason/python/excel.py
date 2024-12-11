@@ -24,8 +24,10 @@ if matches:
     # 모든 이름 찾기
     names = re.findall(name_pattern, pitcher_data)
     
-    # 결과 출력
-    for name in names:
-        print(name)
+    # JSON 파일로 저장
+    with open('기아.json', 'w', encoding='utf-8') as outfile:
+        json.dump(names, outfile, ensure_ascii=False, indent=4)
+
+    print("투수 데이터를 '기아.json' 파일로 저장했습니다.")
 else:
     print("투수 데이터가 없습니다.")
