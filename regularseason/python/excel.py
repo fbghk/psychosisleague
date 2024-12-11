@@ -1,34 +1,31 @@
 import re
-import pandas as pd
 import json
 
-# 데이터 파일 읽기
-with open('data.json', 'r', encoding='utf-8') as file:
-      json_data = json.load(file)
+# JSON 파일 읽기
+with open('KIA.json', 'r', encoding='utf-8') as file:
+    json_data = json.load(file)
 
 # 첫 번째 객체의 "content" 값 추출
 data = json_data[0]['content']
 
-# 공백 및 불필요한 부분 제거하고 리스트로 변환
-cleaned_data = re.sub(r'[\t\n]+', ' ', data)
+# 투수 데이터 추출을 위한 첫 번째 패턴
+pattern = r'등번호\s+투수\s+투타유형\s+생년월일\s+체격([\s\S]+?)(?=\s*등번호\s+(?:포수|내야수|외야수))'
 
-# 키와 몸무게 패턴을 유지하면서 단어 리스트를 추출
-elements = re.findall(r'\d+cm, \d+kg|[^\s]+', cleaned_data)
+# 투수 데이터 추출
+matches = re.search(pattern, data)
 
-# 5열로 변환 (원하는 대로 설정 가능)
-num_columns = 5
-rows = [elements[i:i+num_columns] for i in range(0, len(elements), num_columns)]
-
-# DataFrame 생성
-df = pd.DataFrame(rows, columns=['등번호', '이름', '투타유형', '생년월일', '체격'])
-
-# 시작과 끝 위치 탐색
-start_index = df[df['이름'] == '투수'].index[0]  # 시작 위치 ("투수" 행 포함)
-end_index = df[df['이름'] == '포수'].index[0]  # 끝 위치 ("포수" 행 포함)
-
-# 시작 부분 포함, 끝 부분 제외하여 추출
-filtered_df = df.iloc[start_index:end_index]
-
-# JSON 파일로 저장하기
-filtered_df.to_json('filtered_result.json', orient='records', force_ascii=False)
-print("필터링된 JSON 파일로 저장되었습니다.")
+if matches:
+    pitcher_data = matches.group(1).strip()
+    
+    # 이름 추출을 위한 패턴 수정
+    # 숫자 다음에 오는 이름만 추출하되, cm가 포함되지 않은 행만 추출
+    name_pattern = r'\d+\s+([\w가-힣]+)(?=\s+(?:우|좌|양)(?:투|언))'
+    
+    # 모든 이름 찾기
+    names = re.findall(name_pattern, pitcher_data)
+    
+    # 결과 출력
+    for name in names:
+        print(name)
+else:
+    print("투수 데이터가 없습니다.")
