@@ -4,11 +4,15 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>팀 선발 투수 정보</title>
+  <title>팀 선발 및 불펜 투수 정보</title>
 </head>
 <body>
   <h1 id="team-title">팀 정보</h1>
   <div id="team-info"></div>
+  <div id="bullpen-info">
+    <h2>불펜 투수</h2>
+    <ul id="bullpen-list"></ul>
+  </div>
 
   <script>
     // URL에서 팀 이름을 가져오는 함수
@@ -21,19 +25,24 @@
     const teamName = getTeamNameFromURL();
     const teamTitleElement = document.getElementById('team-title');
     const teamInfoElement = document.getElementById('team-info');
+    const bullpenListElement = document.getElementById('bullpen-list');
     
     if (teamName) {
-      teamTitleElement.textContent = `${teamName} 선발 투수 정보`;
+      teamTitleElement.textContent = `${teamName} 선발 및 불펜 투수 정보`;
 
-      fetch('data.json')
+      let startingPitcher = ''; // 선발 투수 이름을 저장할 변수
+
+      // 선발 투수 정보 출력
+      fetch('todaypitcher.json')
         .then(response => response.json())
         .then(data => {
           const teamData = data.starting.find(team => team.team === teamName);
 
           if (teamData) {
+            startingPitcher = teamData.pitcher; // 선발 투수 이름 저장
             teamInfoElement.innerHTML = `
               <p>팀: ${teamData.team}</p>
-              <p>선발 투수: ${teamData.pitcher}</p>
+              <p>선발 투수: ${startingPitcher}</p>
             `;
           } else {
             teamInfoElement.innerHTML = `<p>선발 투수 정보를 찾을 수 없습니다.</p>`;
@@ -42,6 +51,34 @@
         .catch(error => {
           console.error('Error loading data:', error);
           teamInfoElement.innerHTML = `<p>데이터 로드 오류가 발생했습니다.</p>`;
+        })
+        .finally(() => {
+          // 불펜 투수 정보 출력
+          fetch(`Bullpen/${teamName}.json`)
+            .then(response => response.json())
+            .then(bullpenData => {
+              if (Array.isArray(bullpenData) && bullpenData.length > 0) {
+                // 선발 투수를 불펜 리스트에서 제거
+                const filteredBullpen = bullpenData.filter(pitcher => pitcher !== startingPitcher);
+
+                if (filteredBullpen.length > 0) {
+                  bullpenListElement.innerHTML = '';
+                  filteredBullpen.forEach(pitcher => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = pitcher;
+                    bullpenListElement.appendChild(listItem);
+                  });
+                } else {
+                  bullpenListElement.innerHTML = '<p>불펜 투수 정보가 없습니다.</p>';
+                }
+              } else {
+                bullpenListElement.innerHTML = '<p>불펜 투수 정보가 없습니다.</p>';
+              }
+            })
+            .catch(error => {
+              console.error('Error loading bullpen data:', error);
+              bullpenListElement.innerHTML = `<p>불펜 투수 데이터를 로드할 수 없습니다.</p>`;
+            });
         });
     } else {
       teamInfoElement.innerHTML = `<p>올바르지 않은 접근입니다.</p>`;
